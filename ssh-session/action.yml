@@ -1,0 +1,22 @@
+name: 'SSH Login and Execute Custom Commands'
+description: 'SSH login to remote server and run custom commands.'
+inputs:
+  host:
+    description: 'Server IP or domain to connect to'
+    required: true
+  username:
+    description: 'Username for SSH login'
+    required: true
+  script:
+    description: 'Custom script to run on the remote server'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Execute commands via SSH
+      shell: bash
+      run: |
+        ssh -v -o StrictHostKeyChecking=no ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
+          ${{ inputs.script }}
+        ENDSSH

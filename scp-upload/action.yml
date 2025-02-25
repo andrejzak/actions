@@ -1,0 +1,23 @@
+name: 'SCP Upload Files'
+description: 'Transfer files to a remote server using SCP.'
+inputs:
+  host:
+    description: 'Server IP or domain to connect to'
+    required: true
+  username:
+    description: 'Username for SSH login'
+    required: true
+  source:
+    description: 'Local file or directory path to copy'
+    required: true
+  target:
+    description: 'Remote file or directory path to copy to'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Transfer files via SCP
+      shell: bash
+      run: |
+        scp -o StrictHostKeyChecking=no ${{ inputs.source }} ${{ inputs.username }}@${{ inputs.host }}:${{ inputs.target }}
