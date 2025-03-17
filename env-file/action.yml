@@ -1,0 +1,43 @@
+name: 'Create .env File'
+description: 'Create an .env file with specified environment variables'
+
+inputs:
+  file_name:
+    description: 'The name of the env file to create'
+    required: false
+    default: '.env'
+  file_path:
+    description: 'The path where the env file will be created'
+    required: false
+    default: './'
+  variables:
+    description: 'List of environment variables (separated by new line) to include in the .env file (key=value pairs)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Create .env file with provided variables
+      shell: bash
+      run: |
+        # Remove trailing slash if file_path ends with one
+        file_path="${{ inputs.file_path }}"
+        if [[ "$file_path" == */ ]]; then
+          file_path="${file_path%/}"
+        fi
+        
+        # Create the .env file path
+        env_file="${file_path}/${{ inputs.file_name }}"
+        mkdir -p "$file_path"
+        touch "$env_file"
+        
+        # Write variables to the .env file
+        echo "${{ inputs.variables }}" | while IFS= read -r line; do
+          # Ignore empty lines or lines starting with #
+          if [[ -n "$line" && ! "$line" =~ ^# ]]; then
+            echo "$line" >> "$env_file"
+          fi
+        done
+
+        echo "Created .env file at $env_file with the following variables:"
+        cat "$env_file"
