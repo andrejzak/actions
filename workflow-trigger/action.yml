@@ -1,0 +1,43 @@
+name: 'Trigger Remote Workflow'
+description: 'Triggers another workflow in a different repository.'
+inputs:
+  repo_owner:
+    description: 'The owner of the target repository (e.g. username or organization name)'
+    required: true
+  target_repo:
+    description: 'The target repository where the workflow will be triggered'
+    required: true
+  personal_access_token:
+    description: 'GitHub Personal Access Token with appropriate permissions to trigger the workflow'
+    required: true
+  workflow_file:
+    description: 'The name of the workflow file to be triggered (e.g. main.yml)'
+    required: true
+  ref:
+    description: 'The git reference (branch or tag) to trigger the workflow on (e.g. main)'
+    required: true
+  client_payload:
+    description: 'Any additional payload to send with the workflow dispatch event'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Triggering another workflow
+      shell: bash
+      run: |
+        echo "Triggering workflow in ${{ inputs.target_repo }} repository"
+
+        JSON_DATA='{
+          "ref": "${{ inputs.ref }}"
+        }'
+
+        if [[ -n "${{ inputs.client_payload }}" ]]; then
+          JSON_DATA=$(echo $JSON_DATA | jq --arg payload "${{ inputs.client_payload }}" '. + {client_payload: $payload}')
+        fi
+
+        curl -X POST \
+          https://api.github.com/repos/${{ inputs.repo_owner }}/${{ inputs.target_repo }}/actions/workflows/${{ inputs.workflow_file }}/dispatches \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: token ${{ inputs.personal_access_token }}" \
+          -d "$JSON_DATA"
