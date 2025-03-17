@@ -1,2 +1,2 @@
-# actions
+# Actions
 Custom GitHub actions
