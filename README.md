@@ -2,6 +2,11 @@
 Reusable GitHub Actions for various purposes.
 
 ### Useful git tag commands
+List all exising tags:
+```bash
+git tag
+```
+
 Deleting an existing tag locally:
 ```bash
 git tag -d <tag_name>
