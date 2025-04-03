@@ -31,13 +31,10 @@ runs:
         mkdir -p "$file_path"
         touch "$env_file"
         
-        # Write variables to the .env file
+        # Write normal and json variables to the .env file 
         echo "${{ inputs.variables }}" | while IFS= read -r line; do
-          # Ignore empty lines or lines starting with #
           if [[ -n "$line" && ! "$line" =~ ^# ]]; then
-            # Handle escaping for JSON data in NEXT_CONFIG
-            if [[ "$line" == NEXT_CONFIG* ]]; then
-              # Escape the quotes for the NEXT_CONFIG variable
+            if [[ "$line" =~ \{.*\} ]]; then
               echo "$line" | sed 's/"/\\"/g' >> "$env_file"
             else
               echo "$line" >> "$env_file"
