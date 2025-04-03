@@ -19,7 +19,7 @@ runs:
   steps:
     - name: Create .env file with provided variables
       shell: bash
-      run: |
+      run: |        
         # Remove trailing slash if file_path ends with one
         file_path="${{ inputs.file_path }}"
         if [[ "$file_path" == */ ]]; then
@@ -35,7 +35,13 @@ runs:
         echo "${{ inputs.variables }}" | while IFS= read -r line; do
           # Ignore empty lines or lines starting with #
           if [[ -n "$line" && ! "$line" =~ ^# ]]; then
-            echo "$line" >> "$env_file"
+            # Handle escaping for JSON data in NEXT_CONFIG
+            if [[ "$line" == NEXT_CONFIG* ]]; then
+              # Escape the quotes for the NEXT_CONFIG variable
+              echo "$line" | sed 's/"/\\"/g' >> "$env_file"
+            else
+              echo "$line" >> "$env_file"
+            fi
           fi
         done
 
