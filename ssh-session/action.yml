@@ -24,14 +24,13 @@ runs:
     - name: Execute commands via SSH
       shell: bash
       run: |
+        # Check if password is provided
         if [ -z "${{ inputs.password }}" ]; then
-          # If password is not provided, use SSH key
+          echo "Using SSH key for authentication"
           ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
             ${{ inputs.script }}
           ENDSSH
         else
-          # If password is provided, use sshpass for password authentication
-          sshpass -p "${{ inputs.password }}" ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
-            ${{ inputs.script }}
-          ENDSSH
+          echo "Using password authentication"
+          printf "%s" "${{ inputs.script }}" | sshpass -p "${{ inputs.password }}" ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }}
         fi
