@@ -24,12 +24,9 @@ runs:
     - name: Execute commands via SSH
       shell: bash
       run: |
-        # Check if password is provided
         if [ -z "${{ inputs.password }}" ]; then
           echo "Using SSH key for authentication"
-          ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
-            ${{ inputs.script }}
-          ENDSSH
+          printf "%s" "${{ inputs.script }}" | ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }}
         else
           echo "Using password authentication"
           printf "%s" "${{ inputs.script }}" | sshpass -p "${{ inputs.password }}" ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }}
