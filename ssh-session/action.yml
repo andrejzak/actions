@@ -14,6 +14,9 @@ inputs:
     description: 'Port for SSH connection'
     required: false
     default: '22'
+  password:
+    description: 'Password for SSH login (optional, if SSH key is not used)'
+    required: false
 
 runs:
   using: 'composite'
@@ -21,6 +24,14 @@ runs:
     - name: Execute commands via SSH
       shell: bash
       run: |
-        ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
-          ${{ inputs.script }}
-        ENDSSH
+        if [ -z "${{ inputs.password }}" ]; then
+          # If password is not provided, use SSH key
+          ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
+            ${{ inputs.script }}
+          ENDSSH
+        else
+          # If password is provided, use sshpass for password authentication
+          sshpass -p "${{ inputs.password }}" ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
+            ${{ inputs.script }}
+          ENDSSH
+        fi
