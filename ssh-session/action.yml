@@ -10,6 +10,10 @@ inputs:
   script:
     description: 'Custom script to run on the remote server'
     required: true
+  port:
+    description: 'Port for SSH connection'
+    required: false
+    default: '22'
 
 runs:
   using: 'composite'
@@ -17,6 +21,6 @@ runs:
     - name: Execute commands via SSH
       shell: bash
       run: |
-        ssh -v -o StrictHostKeyChecking=no ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
+        ssh -v -o StrictHostKeyChecking=no -p ${{ inputs.port }} ${{ inputs.username }}@${{ inputs.host }} << 'ENDSSH'
           ${{ inputs.script }}
         ENDSSH
