@@ -35,9 +35,20 @@ runs:
         if [[ -n "${{ inputs.client_payload }}" ]]; then
           JSON_DATA=$(echo $JSON_DATA | jq --arg payload "${{ inputs.client_payload }}" '. + {client_payload: $payload}')
         fi
+        
+        echo "Sending dispatch request..."
 
-        curl -X POST \
+        RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST \
           https://api.github.com/repos/${{ inputs.repo_owner }}/${{ inputs.target_repo }}/actions/workflows/${{ inputs.workflow_file }}/dispatches \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: token ${{ inputs.personal_access_token }}" \
-          -d "$JSON_DATA"
+          -d "$JSON_DATA")
+
+        echo "HTTP response code: $RESPONSE"
+        echo "API response:"
+        cat response.json
+
+        if [[ "$RESPONSE" -lt 200 || "$RESPONSE" -ge 300 ]]; then
+          echo "❌ Failed to trigger workflow (HTTP $RESPONSE)"
+          exit 1
+        fi
